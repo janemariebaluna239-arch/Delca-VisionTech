@@ -162,12 +162,6 @@ export const PLATFORM_NAVIGATION_ITEMS: NavigationItemDef[] = [
     allowedRoles: ['Administrator', 'Marketing', 'Sales', 'Event Management', 'Customer Success', 'Leadership']
   },
   {
-    id: 'identity_verification',
-    label: 'AI Identity Verification',
-    category: 'Intelligence',
-    allowedRoles: ['Administrator', 'Marketing', 'Sales', 'Event Management', 'Customer Success', 'Leadership']
-  },
-  {
     id: 'user_management',
     label: 'User Access Control',
     category: 'System',

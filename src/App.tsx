@@ -65,10 +65,9 @@ import HeaderUserProfile from './components/HeaderUserProfile';
 import UserManagementView from './components/UserManagementView';
 import ScheduledMeetingsView from './components/ScheduledMeetingsView';
 import CompanyOverviewView from './components/CompanyOverviewView';
-import IdentityVerificationView from './components/IdentityVerificationView';
 import DelcaLogo from './components/DelcaLogo';
 import Footer from './components/Footer';
-import { AppStateStore, UserSession, DELCAEvent, Executive, InvitationCopy, Company, RelationshipStage, BusinessOpportunity, UserRole } from './types';
+import { AppStateStore, UserSession, DELCAEvent, Executive, Invitation, InboundEmailReply, InvitationCopy, Company, RelationshipStage, ContactSource, BusinessOpportunity, UserRole } from './types';
 import { isTabAllowedForRole, getDefaultTabForRole, EnterpriseUserAccount, PRECONFIGURED_ENTERPRISE_USERS } from './lib/rbac';
 import { REAL_APP_STATE } from './data/realData';
 import { 
@@ -583,8 +582,8 @@ export default function App() {
           companyWebsite: item.companyWebsite || '',
           contactStatus: item.contactStatus || 'Verified',
           verificationDate: new Date().toISOString(),
-          relationshipStage: item.relationshipStage || 'Target Account',
-          contactSource: 'Bulk Import',
+          relationshipStage: (item.relationshipStage as RelationshipStage) || 'New Contact',
+          contactSource: ((item.contactSource as any) || 'Direct Outreach') as ContactSource,
           communicationPreferences: ['Email'],
           tags: item.tags || ['Imported'],
           notes: item.notes || '',
@@ -955,6 +954,95 @@ export default function App() {
     }
   };
 
+  // RECEIVE / RECORD INBOUND CLIENT EMAIL REPLY (NO AUTO-REPLY)
+  const handleReceiveInboundReply = (replyData: {
+    executiveId: string;
+    subject: string;
+    body: string;
+    senderEmail?: string;
+    senderName?: string;
+    invitationId?: string;
+    status?: 'Accepted' | 'Declined' | 'Received';
+  }) => {
+    setAppState(prev => {
+      if (!prev) return prev;
+      const exec = prev.executives.find(e => e.id === replyData.executiveId);
+      const senderName = replyData.senderName || exec?.fullName || 'VIP Client Executive';
+      const senderEmail = replyData.senderEmail || exec?.email || 'janemariebaluna239@gmail.com';
+
+      const newReply: InboundEmailReply = {
+        id: `REP-${Date.now().toString(36).toUpperCase()}`,
+        invitationId: replyData.invitationId,
+        executiveId: replyData.executiveId,
+        senderEmail,
+        senderName,
+        subject: replyData.subject,
+        body: replyData.body,
+        receivedAt: new Date().toISOString(),
+        status: 'Received',
+        hasAutoReplied: false
+      };
+
+      const updatedReplies = [newReply, ...(prev.inboundEmailReplies || [])];
+
+      // Update executive interaction history with email reply note
+      const updatedExecs = prev.executives.map(e => {
+        if (e.id === replyData.executiveId) {
+          const newInteraction = {
+            id: `INT-${Date.now().toString(36).toUpperCase()}`,
+            authorName: senderName,
+            authorRole: `${e.position} (${e.company})`,
+            type: 'Email' as const,
+            content: `[Inbound Email Reply Received via Gmail Thread]\nFrom: ${senderName} <${senderEmail}>\nSubject: ${replyData.subject}\n\n${replyData.body}\n\n[Portal Status: Direct Client Message Logged - No auto-reply sent]`,
+            timestamp: new Date().toISOString()
+          };
+          return {
+            ...e,
+            interactionHistory: [newInteraction, ...(e.interactionHistory || [])]
+          };
+        }
+        return e;
+      });
+
+      // Update matching invitation if present
+      const updatedInvitations = prev.invitations.map(inv => {
+        if ((replyData.invitationId && inv.id === replyData.invitationId) || inv.executiveId === replyData.executiveId) {
+          const isAccepted = replyData.status === 'Accepted' || replyData.subject.toLowerCase().includes('accept') || replyData.body.toLowerCase().includes('confirm');
+          return {
+            ...inv,
+            status: isAccepted ? ('Accepted' as const) : inv.status,
+            acceptedAt: isAccepted ? new Date().toISOString() : inv.acceptedAt,
+            replies: [newReply, ...(inv.replies || [])]
+          };
+        }
+        return inv;
+      });
+
+      const newNotification = {
+        id: `NOT-${Date.now()}`,
+        type: 'info' as const,
+        title: `Inbound Email Reply: ${senderName}`,
+        message: `Received email reply from ${senderName}: "${replyData.subject}". Logged directly on website thread (No auto-reply sent).`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        relatedExecutiveId: replyData.executiveId
+      };
+
+      const newState: AppStateStore = {
+        ...prev,
+        executives: updatedExecs,
+        invitations: updatedInvitations,
+        inboundEmailReplies: updatedReplies,
+        notifications: [newNotification, ...prev.notifications]
+      };
+
+      saveToLocalStorage(newState);
+      return newState;
+    });
+
+    addToast('Client Email Reply Logged to Portal', 'Received inbound email reply from executive and stored directly in website thread (No auto-reply sent).', 'success');
+  };
+
   // ADD EVENT
   const handleAddEvent = async (data: Partial<DELCAEvent>) => {
     try {
@@ -969,18 +1057,18 @@ export default function App() {
         const newEvt: DELCAEvent = {
           id: `EVT-${String(prev.events.length + 1).padStart(3, '0')}`,
           name: data.name || 'New Enterprise Summit',
-          category: data.category || 'ERP & Cloud Modernization',
-          industryFocus: data.industryFocus || 'Banking & Financial Services',
+          description: data.description || 'Enterprise Technology Leadership Forum',
+          venue: data.venue || 'Grand Hyatt Manila, BGC',
           date: data.date || new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
           time: data.time || '09:00 AM PST',
-          venue: data.venue || 'Grand Hyatt Manila, BGC',
-          description: data.description || 'Enterprise Technology Leadership Forum',
+          registrationDeadline: data.registrationDeadline || new Date(Date.now() + 25 * 86400000).toISOString().split('T')[0],
+          targetIndustry: data.targetIndustry || (data as any).industryFocus || 'Banking & Financial Services',
+          category: data.category || 'ERP & Cloud Modernization',
+          maxParticipants: data.maxParticipants || (data as any).capacity || 100,
+          speakerInfo: data.speakerInfo || data.speaker || 'Keynote Speaker',
           status: data.status || 'Upcoming',
           speaker: data.speaker || 'Keynote Speaker',
-          targetAudience: data.targetAudience || ['Banking', 'C-Level Executives'],
-          capacity: data.capacity || 100,
-          registeredCount: 0,
-          keyTopics: data.keyTopics || ['Cloud Transformation', 'AI Architecture']
+          targetAudience: data.targetAudience || ['Banking', 'C-Level Executives']
         };
         const newState = { ...prev, events: [newEvt, ...prev.events] };
         saveToLocalStorage(newState);
@@ -1171,7 +1259,6 @@ export default function App() {
       case 'database': return 'Database Hub';
       case 'matching': return 'Smart Matcher & Strategic Alignment Engine';
       case 'bi_analytics': return 'BI Analytics & Commercial Intelligence Hub';
-      case 'identity_verification': return 'AI Identity Verification Engine';
       case 'user_management': return 'User Access Control';
       default: return 'Executive Management Platform';
     }
@@ -1220,7 +1307,6 @@ export default function App() {
                 { id: 'database', label: 'Database Hub', icon: Database },
                 { id: 'matching', label: 'Smart Matcher Engine', icon: Compass },
                 { id: 'bi_analytics', label: 'BI Analytics Hub', icon: PieChart },
-                { id: 'identity_verification', label: 'AI Identity Engine', icon: ShieldCheck },
                 { id: 'user_management', label: 'User Access Control', icon: ShieldCheck }
               ].filter(item => isTabAllowedForRole(item.id, session.userRole)).map(item => {
                 const Icon = item.icon;
@@ -1298,7 +1384,6 @@ export default function App() {
                 { id: 'database', label: 'Database Hub', icon: Database },
                 { id: 'matching', label: 'Smart Matcher Engine', icon: Compass },
                 { id: 'bi_analytics', label: 'BI Analytics Hub', icon: PieChart },
-                { id: 'identity_verification', label: 'AI Identity Engine', icon: ShieldCheck },
                 { id: 'user_management', label: 'User Access Control', icon: ShieldCheck }
               ].filter(item => isTabAllowedForRole(item.id, session.userRole)).map(item => {
                 const Icon = item.icon;
@@ -1438,6 +1523,7 @@ export default function App() {
             onScheduleMeeting={handleOpenScheduleMeeting}
             onOpenInteraction={(exec) => setSelectedExecForInteraction(exec)}
             onOpenPersonaBuilder={handleOpenPersonaAgent}
+            onOpen360Profile={(exec) => setSelected360Executive(exec)}
             onSendInvitation={(exec) => {
               setActiveTab('invitations');
             }}
@@ -1624,14 +1710,6 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'identity_verification' && (
-          <IdentityVerificationView
-            sessionRole={session.userRole}
-            userName={session.userName}
-            onAddToast={addToast}
-          />
-        )}
-
         {activeTab === 'matching' && (
           <EventRecommendationView
             executives={finalAppState.executives}
@@ -1655,6 +1733,7 @@ export default function App() {
             onDeleteInvitation={handleDeleteInvitation}
             onNavigateToTab={(tabId) => setActiveTab(tabId)}
             onAddInteractionNote={handleAddInteractionNote}
+            onReceiveInboundReply={handleReceiveInboundReply}
           />
         )}
 
@@ -1663,6 +1742,7 @@ export default function App() {
             events={finalAppState.events}
             executives={finalAppState.executives}
             invitations={finalAppState.invitations}
+            inboundReplies={finalAppState.inboundEmailReplies || []}
             onAddEvent={handleAddEvent}
             onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
@@ -1670,6 +1750,7 @@ export default function App() {
             onOpen360Profile={(exec) => setSelected360Executive(exec)}
             onComposeEmail={handleOpenComposeEmail}
             onNavigateToTab={(tabId) => setActiveTab(tabId)}
+            onReceiveInboundReply={handleReceiveInboundReply}
           />
         )}
 

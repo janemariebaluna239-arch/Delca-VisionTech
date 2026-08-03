@@ -96,6 +96,7 @@ interface ExecutiveManagementViewProps {
   onUpdateOpportunity?: (execId: string, oppId: string, data: any) => Promise<void>;
   onDeleteOpportunity?: (execId: string, oppId: string) => Promise<void>;
   onDeleteInteractionNote?: (execId: string, noteId: string) => Promise<void>;
+  onOpen360Profile?: (exec: Executive) => void;
   userRole: UserRole | string;
 }
 
@@ -117,10 +118,19 @@ export default function ExecutiveManagementView({
   onUpdateOpportunity,
   onDeleteOpportunity,
   onDeleteInteractionNote,
+  onOpen360Profile,
   userRole
 }: ExecutiveManagementViewProps) {
   const permissions = getRolePermissions(userRole as UserRole);
   const [unlockedLeadershipIds, setUnlockedLeadershipIds] = useState<Record<string, boolean>>({});
+
+  const handleOpenProfile = (exec: Executive) => {
+    if (onOpen360Profile) {
+      onOpen360Profile(exec);
+    } else {
+      setSelectedExecDetail(exec);
+    }
+  };
 
   const handleUnlockLeadershipAccess = (execId: string, execName: string) => {
     setUnlockedLeadershipIds(prev => ({ ...prev, [execId]: true }));
@@ -754,7 +764,7 @@ export default function ExecutiveManagementView({
         <ScheduledMeetingsView
           executives={executives}
           session={{ userId: 'u1', userName: 'Jane Marie Baluna', userRole: userRole, userEmail: 'janemariebaluna239@gmail.com', permissions: ['*'] }}
-          onOpen360Profile={(exec) => setSelectedExecDetail(exec)}
+          onOpen360Profile={(exec) => handleOpenProfile(exec)}
           onComposeEmail={onComposeEmail}
           onScheduleMeeting={(exec) => onScheduleMeeting && onScheduleMeeting(exec)}
           onDeleteMeetingNote={onDeleteInteractionNote}
@@ -1023,7 +1033,7 @@ export default function ExecutiveManagementView({
 
                             <div className="space-y-0.5 min-w-0">
                               <button
-                                onClick={() => setSelectedExecDetail(exec)}
+                                onClick={() => handleOpenProfile(exec)}
                                 className="font-bold text-white hover:text-cyan-400 transition-colors text-sm text-left flex items-center space-x-1.5 truncate"
                               >
                                 <span className="truncate">{exec.fullName}</span>
@@ -1092,7 +1102,7 @@ export default function ExecutiveManagementView({
                         <td className="p-4 text-right">
                           <div className="flex items-center justify-end space-x-1.5">
                             <button
-                              onClick={() => setSelectedExecDetail(exec)}
+                              onClick={() => handleOpenProfile(exec)}
                               className="px-3 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 transition-all text-xs font-bold font-mono flex items-center space-x-1 shadow-sm"
                               title="View Executive Profile"
                             >

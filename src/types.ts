@@ -455,6 +455,20 @@ export interface EventRecommendation {
 
 export type InvitationStatus = 'Draft' | 'Pending' | 'Sent' | 'Accepted' | 'Declined' | 'Attended';
 
+export interface InboundEmailReply {
+  id: string;
+  invitationId?: string;
+  executiveId: string;
+  senderEmail: string;
+  senderName: string;
+  subject: string;
+  body: string;
+  receivedAt: string;
+  status: 'Received' | 'Reviewed';
+  gmailThreadId?: string;
+  hasAutoReplied: false;
+}
+
 export interface Invitation {
   id: string;
   executiveId: string;
@@ -469,6 +483,7 @@ export interface Invitation {
 
   subjectLine?: string;
   emailBody?: string;
+  replies?: InboundEmailReply[];
 }
 
 export interface InvitationCopy {
@@ -692,4 +707,5 @@ export interface AppStateStore {
   companies?: Company[];
   opportunities?: BusinessOpportunity[];
   verificationRequests?: VerificationRequest[];
+  inboundEmailReplies?: InboundEmailReply[];
 }

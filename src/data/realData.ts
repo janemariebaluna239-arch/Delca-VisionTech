@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Executive, Company, DELCAEvent, EventRecommendation, Invitation, ActivityLog, NotificationItem, SystemSettings, AppStateStore } from '../types';
+import { Executive, Company, DELCAEvent, EventRecommendation, Invitation, InboundEmailReply, ActivityLog, NotificationItem, SystemSettings, AppStateStore } from '../types';
 
 export const REAL_COMPANIES: Company[] = [
   {
@@ -1136,6 +1136,51 @@ export const REAL_RECOMMENDATIONS: EventRecommendation[] = [
   }
 ];
 
+export const REAL_INBOUND_REPLIES: InboundEmailReply[] = [
+  {
+    id: 'REP-001',
+    invitationId: 'INV-001',
+    executiveId: 'EXE-001',
+    senderEmail: 'nestor.tan@bdo.com.ph',
+    senderName: 'Nestor V. Tan',
+    subject: 'Re: VIP Invitation: Nestor V. Tan | Asia-Pacific Cloud ERP & Financial Summit 2026',
+    body: `Dear Ms. Baluna,
+
+Thank you for the executive invitation to the Asia-Pacific Cloud ERP & Financial Modernization Summit 2026.
+
+I am pleased to confirm that I will be attending the session on August 28 at Solaire Resort. Our core banking and technology architecture group at BDO is currently reviewing cloud ledger consolidation options, and I look forward to participating in the roundtable.
+
+Best regards,
+Nestor V. Tan
+President & CEO
+BDO Unibank, Inc.`,
+    receivedAt: '2026-07-23T09:15:00Z',
+    status: 'Received',
+    hasAutoReplied: false
+  },
+  {
+    id: 'REP-002',
+    invitationId: 'INV-002',
+    executiveId: 'EXE-002',
+    senderEmail: 'arthur.vance@smc.com.ph',
+    senderName: 'Arthur R. Vance',
+    subject: 'Re: Executive Briefing: Cloud ERP Modernization & Digital Supply Chain',
+    body: `Hi DELCA Outreach Team,
+
+Thank you for reaching out regarding the Cloud ERP Supply Chain initiative for San Miguel Corporation.
+
+Our IT Steering Committee would be interested in learning more about your SAP S/4HANA migration frameworks. Could you send the preliminary solution brief and schedule an exploratory 30-minute briefing with our Enterprise Systems lead?
+
+Regards,
+Arthur R. Vance
+Chief Technology Officer
+San Miguel Corporation`,
+    receivedAt: '2026-07-24T11:40:00Z',
+    status: 'Received',
+    hasAutoReplied: false
+  }
+];
+
 export const REAL_INVITATIONS: Invitation[] = [
   {
     id: 'INV-001',
@@ -1159,11 +1204,13 @@ With professional regards,
 Jane Marie Baluna
 Principal Director, Client Outreach
 DELCA VisionTech Inc.`,
-    status: 'Sent',
+    status: 'Accepted',
     sentAt: '2026-07-22T14:20:00Z',
+    acceptedAt: '2026-07-23T09:15:00Z',
     createdAt: '2026-07-22T10:00:00Z',
     subjectLine: 'VIP Invitation: Nestor V. Tan | Asia-Pacific Cloud ERP & Financial Summit 2026',
-    emailBody: `Dear Nestor V. Tan...`
+    emailBody: `Dear Nestor V. Tan...`,
+    replies: [REAL_INBOUND_REPLIES[0]]
   }
 ];
 
@@ -1185,6 +1232,15 @@ export const REAL_NOTIFICATIONS: NotificationItem[] = [
     message: 'Loaded 20 verified Philippine enterprise companies and 68 executive profiles across Banking, Property, Manufacturing, Distribution, and Financial Services.',
     timestamp: new Date('2026-07-24T08:00:00Z').toISOString(),
     read: false
+  },
+  {
+    id: 'NOT-002',
+    type: 'info',
+    title: 'New Client Email Reply Received',
+    message: 'Nestor V. Tan (President & CEO, BDO Unibank) replied to VIP Invitation: "Confirmed attendance for Cloud ERP Summit". Posted directly to portal (No auto-reply sent).',
+    timestamp: '2026-07-23T09:15:00Z',
+    read: false,
+    relatedExecutiveId: 'EXE-001'
   }
 ];
 
@@ -1194,6 +1250,7 @@ export const REAL_APP_STATE: AppStateStore = {
   events: REAL_EVENTS,
   recommendations: REAL_RECOMMENDATIONS,
   invitations: REAL_INVITATIONS,
+  inboundEmailReplies: REAL_INBOUND_REPLIES,
   activityLogs: REAL_LOGS,
   notifications: REAL_NOTIFICATIONS,
   settings: {

@@ -21,7 +21,8 @@ import {
   User,
   ExternalLink,
   Sparkles,
-  Inbox
+  Inbox,
+  MessageSquare
 } from 'lucide-react';
 import { Executive, DELCAEvent, InvitationCopy, AppStateStore, UserSession } from '../types';
 
@@ -34,6 +35,15 @@ interface InvitationGeneratorViewProps {
   onDeleteInvitation: (id: string) => void;
   onNavigateToTab: (tabId: string) => void;
   onAddInteractionNote?: (execId: string, noteType: 'Note' | 'Email' | 'Meeting' | 'Call', content: string) => void;
+  onReceiveInboundReply?: (replyData: {
+    executiveId: string;
+    subject: string;
+    body: string;
+    senderEmail?: string;
+    senderName?: string;
+    invitationId?: string;
+    status?: 'Accepted' | 'Declined' | 'Received';
+  }) => void;
 }
 
 export default function InvitationGeneratorView({
@@ -44,7 +54,8 @@ export default function InvitationGeneratorView({
   onUpdateStatus,
   onDeleteInvitation,
   onNavigateToTab,
-  onAddInteractionNote
+  onAddInteractionNote,
+  onReceiveInboundReply
 }: InvitationGeneratorViewProps) {
   const [selectedExecId, setSelectedExecId] = useState<string>(state.executives[0]?.id || '');
   const [selectedEventId, setSelectedEventId] = useState<string>(state.events[0]?.id || '');
@@ -298,6 +309,36 @@ export default function InvitationGeneratorView({
 
       {/* Right Column: Invitation Draft Display, Sender/Recipient Config, & Gmail Dispatcher */}
       <div className="lg:col-span-8 space-y-6">
+        {/* Gmail Integration & Inbound Response Notice Banner */}
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-navy-950 via-slate-900 to-navy-900 border border-cyan-500/30 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-3 font-mono text-xs">
+          <div className="flex items-start space-x-3">
+            <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shrink-0 mt-0.5">
+              <Mail className="w-4 h-4 text-cyan-400" />
+            </div>
+            <div>
+              <div className="font-bold text-white flex items-center space-x-2">
+                <span>Inbound Email Response Synchronization</span>
+                <span className="px-2 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  No Auto-Reply Enforced
+                </span>
+              </div>
+              <p className="text-slate-300 text-[11px] mt-1 leading-relaxed">
+                Client email replies populate directly on this website. Automatic replies are strictly suppressed. To view or respond in your Google Inbox, click 'Proceed to Gmail'.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 shrink-0">
+            <button
+              onClick={() => window.open('https://mail.google.com/mail/u/0/#inbox', '_blank')}
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-navy-950 font-bold text-xs uppercase tracking-wider flex items-center space-x-1.5 shadow-md transition-all"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Proceed to Gmail</span>
+            </button>
+          </div>
+        </div>
+
         {statusMessage && (
           <div className={`p-4 rounded-xl border text-xs flex items-center justify-between transition-all ${
             statusMessage.type === 'success' 
@@ -434,6 +475,79 @@ export default function InvitationGeneratorView({
                 className="w-full bg-navy-950 border border-white/10 rounded-xl p-4 text-xs text-slate-200 font-mono leading-relaxed focus:outline-none focus:border-cyan-400"
               />
             </div>
+
+            {/* Inbound Executive Reply Thread Box */}
+            {(() => {
+              const matchingReplies = [
+                ...(activeInvitation.replies || []),
+                ...(state.inboundEmailReplies || []).filter(r => r.executiveId === selectedExecId || r.invitationId === activeInvitation.id)
+              ];
+
+              return (
+                <div className="p-5 rounded-2xl bg-navy-900/90 border border-emerald-500/30 space-y-3 font-mono text-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/10">
+                    <div className="flex items-center space-x-2 text-emerald-300 font-bold">
+                      <MessageSquare className="w-4 h-4 text-emerald-400" />
+                      <span>Direct Executive Client Email Thread</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-normal">
+                        {matchingReplies.length} Inbound Message{matchingReplies.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => window.open('https://mail.google.com/mail/u/0/#inbox', '_blank')}
+                        className="text-[11px] text-cyan-400 hover:underline flex items-center space-x-1"
+                      >
+                        <span>Proceed to Gmail</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+
+                      {onReceiveInboundReply && selectedExec && (
+                        <button
+                          onClick={() => {
+                            onReceiveInboundReply({
+                              executiveId: selectedExec.id,
+                              subject: `Re: ${editedSubject || activeInvitation.subjectLine || 'VIP Invitation'}`,
+                              body: `Dear DELCA Outreach Team,\n\nI confirm my attendance for the event. Our team is eager to participate.\n\nBest regards,\n${selectedExec.fullName}`,
+                              senderEmail: selectedExec.email,
+                              senderName: selectedExec.fullName,
+                              invitationId: activeInvitation.id,
+                              status: 'Accepted'
+                            });
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/40 text-[10px] font-bold flex items-center space-x-1"
+                        >
+                          <MessageSquare className="w-3 h-3 text-purple-400" />
+                          <span>Simulate Client Reply</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {matchingReplies.length > 0 ? (
+                    <div className="space-y-3">
+                      {matchingReplies.map((reply, idx) => (
+                        <div key={reply.id || idx} className="p-3.5 rounded-xl bg-navy-950 border border-emerald-500/20 space-y-2">
+                          <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                            <span className="text-emerald-300 font-bold">From: {reply.senderName} &lt;{reply.senderEmail}&gt;</span>
+                            <span>{new Date(reply.receivedAt).toLocaleString()}</span>
+                          </div>
+                          <div className="font-bold text-white">{reply.subject}</div>
+                          <div className="text-slate-300 whitespace-pre-wrap leading-relaxed p-3 bg-slate-900 rounded border border-white/5">
+                            {reply.body}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-3 text-center text-slate-400 text-xs italic">
+                      No inbound replies received yet for this invitation. Any client responses sent to your email will populate here directly without auto-replying.
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Save Edits button */}
             {isEditing && (
