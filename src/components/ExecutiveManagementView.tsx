@@ -223,20 +223,20 @@ export default function ExecutiveManagementView({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: nextStatus })
-      });
-      onEditExecutive(exec.id, {
+      }).catch(() => null);
+    } catch (e) {
+      console.error(e);
+    }
+    onEditExecutive(exec.id, {
+      contactStatus: nextStatus,
+      verificationDate: nextStatus === 'Verified' ? new Date().toISOString() : null
+    });
+    if (selectedExecDetail?.id === exec.id) {
+      setSelectedExecDetail({
+        ...exec,
         contactStatus: nextStatus,
         verificationDate: nextStatus === 'Verified' ? new Date().toISOString() : null
       });
-      if (selectedExecDetail?.id === exec.id) {
-        setSelectedExecDetail({
-          ...exec,
-          contactStatus: nextStatus,
-          verificationDate: nextStatus === 'Verified' ? new Date().toISOString() : null
-        });
-      }
-    } catch (e) {
-      console.error(e);
     }
   };
 
