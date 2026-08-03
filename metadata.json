@@ -1,0 +1,8 @@
+{
+  "name": "Remix DELCA SmartPersona",
+  "description": "An AI-powered executive profiling, persona generation, and event recommendation system for DELCA VisionTech Inc.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

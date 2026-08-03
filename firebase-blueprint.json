@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "executives": {
+      "title": "Executive",
+      "description": "Executive leadership contacts and profile records.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "position": { "type": "string" },
+        "company": { "type": "string" },
+        "companyId": { "type": "string" },
+        "industry": { "type": "string" },
+        "department": { "type": "string" },
+        "country": { "type": "string" },
+        "email": { "type": "string" },
+        "contactNumber": { "type": "string" },
+        "linkedinProfile": { "type": "string" },
+        "companyWebsite": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "companyLogoUrl": { "type": "string" },
+        "contactStatus": { "type": "string" },
+        "verificationDate": { "type": "string" },
+        "notes": { "type": "string" },
+        "followUpDate": { "type": "string" },
+        "eventHistory": { "type": "array" },
+        "interactionLog": { "type": "array" }
+      },
+      "required": ["id", "fullName", "company", "email"]
+    },
+    "events": {
+      "title": "DELCAEvent",
+      "description": "Executive summits and corporate events.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventName": { "type": "string" },
+        "targetIndustry": { "type": "string" },
+        "targetRole": { "type": "string" },
+        "eventDate": { "type": "string text-date" },
+        "location": { "type": "string" },
+        "status": { "type": "string" },
+        "capacity": { "type": "number" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "eventName"]
+    },
+    "invitations": {
+      "title": "Invitation",
+      "description": "Sent VIP invitations to executives.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "executiveId": { "type": "string" },
+        "executiveName": { "type": "string" },
+        "eventId": { "type": "string" },
+        "eventName": { "type": "string" },
+        "sentDate": { "type": "string" },
+        "status": { "type": "string" },
+        "invitationCopy": { "type": "object" }
+      },
+      "required": ["id", "executiveId", "eventId"]
+    },
+    "notifications": {
+      "title": "NotificationItem",
+      "description": "System reminders and activity notifications.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "read": { "type": "boolean" },
+        "relatedExecutiveId": { "type": "string" }
+      },
+      "required": ["id", "title"]
+    }
+  }
+}

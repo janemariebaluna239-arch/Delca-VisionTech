@@ -1,0 +1,91 @@
+{
+  "executives": [
+    {
+      "id": "EXE-001",
+      "fullName": "Nestor V. Tan",
+      "position": "President & CEO",
+      "jobTitle": "President & CEO",
+      "company": "BDO Unibank",
+      "companyId": "CMP-001",
+      "industry": "Banking & Financial Services",
+      "department": "Executive Management",
+      "city": "Makati City",
+      "country": "Philippines",
+      "email": "nestor.tan@bdo.com.ph",
+      "contactNumber": "+63 2 8840 7000",
+      "phoneNumber": "+63 2 8840 7000",
+      "linkedinProfile": "https://linkedin.com/in/nestor-v--tan",
+      "companyWebsite": "https://www.bdo.com.ph",
+      "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=250",
+      "companyLogoUrl": "https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?auto=format&fit=crop&q=80&w=200",
+      "contactStatus": "Verified",
+      "verificationDate": "2026-06-15T10:00:00Z",
+      "relationshipStage": "Active Client",
+      "contactSource": "Direct Outreach",
+      "communicationPreferences": [
+        "Email",
+        "In-Person",
+        "LinkedIn"
+      ],
+      "tags": [
+        "VIP Executive",
+        "Banking Leader",
+        "Core Banking"
+      ],
+      "notes": "Executive decision maker overseeing enterprise IT, cloud ERP modernization, and digital transformation for BDO Unibank. Active contact in DELCA VisionTech EIRMS database.",
+      "lastContactDate": "2026-07-20T14:00:00Z",
+      "followUpDate": "2026-08-05",
+      "preferredEventCategories": [
+        "Cloud & ERP Modernization",
+        "Digital Banking",
+        "Supply Chain Analytics",
+        "Cybersecurity"
+      ],
+      "previousEventAttendance": [
+        "DELCA VisionTech Executive Summit 2025",
+        "PH Enterprise Tech Forum"
+      ],
+      "status": "Active",
+      "createdAt": "2026-01-15T09:00:00Z",
+      "profileCompleteness": 92,
+      "healthScore": 92,
+      "healthStatus": "Thriving",
+      "referredById": null,
+      "referredByName": null,
+      "opportunities": [
+        {
+          "id": "OPP-001",
+          "executiveId": "EXE-001",
+          "title": "Enterprise Core Banking Migration to DELCA Cloud",
+          "value": 750000,
+          "stage": "Won",
+          "opportunityType": "Software Licensing",
+          "expectedCloseDate": "2026-10-15",
+          "probability": 100,
+          "assignedTeamMember": "Jane Marie Baluna",
+          "notes": "Engaged on high-priority initiative with expected timeline Q3/Q4 2026.",
+          "createdAt": "2026-05-10T10:00:00Z",
+          "updatedAt": "2026-07-20T14:00:00Z"
+        }
+      ],
+      "interactionHistory": [
+        {
+          "id": "NOTE-001-1",
+          "authorName": "Jane Marie Baluna",
+          "authorRole": "Sales Team",
+          "type": "Meeting",
+          "content": "Executive briefing conducted with Nestor V. Tan regarding DELCA VisionTech Cloud Solutions. Positive feedback recorded.",
+          "timestamp": "2026-07-18T10:30:00Z"
+        }
+      ],
+      "networkConnections": [
+        {
+          "executiveId": "EXE-002",
+          "executiveName": "Dennis B. Tangonan",
+          "connectionType": "Industry Peer",
+          "notes": "Co-member of Philippine Executive Technology Council."
+        }
+      ]
+    }
+  ]
+}
